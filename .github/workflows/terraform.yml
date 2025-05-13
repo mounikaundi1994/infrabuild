@@ -1,40 +1,40 @@
-name: Terraform Workflow
+name: Terraform S3 Deployment
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Select environment'
+        description: "Select environment"
         required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - prod
+        default: dev
 
 jobs:
   terraform:
-    name: 'Terraform Plan and Apply'
+    name: "Terraform Apply"
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: terraform/${{ github.event.inputs.environment }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.6.0
+      # 🔐 Authenticate to AWS using Secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # or your preferred region
 
-    - name: Terraform Init
-      run: terraform init
+      # 🔧 Terraform Commands
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Plan
-      run: terraform plan -var-file=terraform.tfvars
+      - name: Terraform Plan
+        run: terraform plan
 
-    - name: Terraform Apply (Manual Approval)
-      if: github.event_name == 'workflow_dispatch'
-      run: terraform apply -auto-approve -var-file=terraform.tfvars
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
