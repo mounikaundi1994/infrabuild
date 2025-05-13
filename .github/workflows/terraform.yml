@@ -29,6 +29,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  # or your preferred region
 
+      # 🔧 Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0  # Specify the desired version of Terraform
+
       # 🔧 Terraform Commands
       - name: Terraform Init
         run: terraform init
