@@ -32,15 +32,15 @@ jobs:
 
       - name: Initialize Terraform
         run: |
-          cd terraform/envs/${{ github.event.inputs.environment }}
-          terraform init
+          terraform -chdir=terraform init \
+            -backend-config=terraform/envs/${{ github.event.inputs.environment }}/backend.tf
 
       - name: Plan Terraform
         run: |
-          cd terraform/envs/${{ github.event.inputs.environment }}
-          terraform plan -var-file=terraform.tfvars
+          terraform -chdir=terraform plan \
+            -var-file=terraform/envs/${{ github.event.inputs.environment }}/terraform.tfvars
 
       - name: Apply Terraform
         run: |
-          cd terraform/envs/${{ github.event.inputs.environment }}
-          terraform apply -auto-approve -var-file=terraform.tfvars
+          terraform -chdir=terraform apply -auto-approve \
+            -var-file=terraform/envs/${{ github.event.inputs.environment }}/terraform.tfvars
