@@ -1,2 +1,0 @@
-# infrabuild
-opentofu infrabuild
