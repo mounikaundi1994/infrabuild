@@ -1,46 +1,40 @@
-name: Terraform S3 Deployment
+name: Terraform Manual Workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Select environment"
-        required: true
-        default: dev
+  workflow_dispatch:  # This enables the "Run workflow" button in GitHub UI
 
 jobs:
   terraform:
-    name: "Terraform Apply"
+    name: 'Terraform Plan and Apply'
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform/${{ github.event.inputs.environment }}
+    env:
+      AWS_REGION: us-east-1  # Update to your desired AWS region
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # 🔐 Authenticate to AWS using Secrets
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # or your preferred region
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0  # Use your preferred version
 
-      # 🔧 Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.0  # Specify the desired version of Terraform
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      # 🔧 Terraform Commands
-      - name: Terraform Init
-        run: terraform init
+    - name: Terraform Init
+      run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan
+    - name: Terraform Validate
+      run: terraform validate
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+    - name: Terraform Plan
+      run: terraform plan -var-file=terraform.tfvars
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var-file=terraform.tfvars
