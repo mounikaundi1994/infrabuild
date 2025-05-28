@@ -9,3 +9,4 @@ resource "aws_s3_bucket" "ststbuk" {
   bucket = var.bucket_name
   tags   = var.tags
 }
+#
